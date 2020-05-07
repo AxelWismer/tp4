@@ -38,7 +38,8 @@ class Montecarlo(generic.FormView):
                 v=form.cleaned_data['vencimiento'] + 1,
                 num_pseudoaleatorios=num_pseudoaleatorios
             )
-        ganacia = product.simular(form.cleaned_data['cant_iteraciones'])
-        print(ganacia)
-
-        return render(self.request, template_name=self.template_name, context={'ganancia': ganacia, 'form': form})
+        iteraciones = form.cleaned_data['cant_iteraciones']
+        ganacia = product.simular(iteraciones)
+        ganacia_media = round(ganacia / iteraciones, 2)
+        return render(self.request, template_name=self.template_name,
+                      context={'ganancia': ganacia, 'form': form, 'ganancia_media': ganacia_media})
