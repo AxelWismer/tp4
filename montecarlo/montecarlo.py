@@ -19,6 +19,9 @@ class Producto:
         self.ingreso = 0
         self.costo_reposicion = 0
         self.beneficio_total = 0
+        self.tabla = []
+        self.iteracion = {}
+        self.dia = 0
 
         # Array de numeros pseudoaleatorios
         # Si no se ingresa uno el programa trabajara con el random del sistema
@@ -39,6 +42,8 @@ class Producto:
 
     def set_demanda(self):
         rnd = self.next_rnd()
+        # Agregar al diccionario
+        self.iteracion['rnd'] = round(rnd, 4)
         if rnd < 0.15:
             self.demanda = 3
         elif rnd < 0.4:
@@ -83,10 +88,28 @@ class Producto:
             self.costo_reposicion = 0
 
     def set_total(self):
-        self.beneficio_total = self.beneficio_total + (self.ingreso - self.costo_reposicion)
+        total = self.ingreso - self.costo_reposicion
+        self.iteracion['total'] = total
+        self.beneficio_total = self.beneficio_total + total
+
+    def guardar_iteracion(self):
+        self.iteracion['dia'] = self.dia
+        self.iteracion['demanda'] = self.demanda
+        self.iteracion['reposicion'] = self.reposicion
+        self.iteracion['disponible'] = self.disponibilidad
+        self.iteracion['stock'] = self.stock
+        self.iteracion['venta'] = self.cant_vendida
+        self.iteracion['ingreso'] = self.ingreso
+        self.iteracion['costo'] = self.costo_reposicion
+        self.iteracion['total_acum'] = self.beneficio_total
+
+        iteracion = self.iteracion
+        self.iteracion = {}
+        return iteracion
 
     def simular(self, cant_iteraciones):
         for i in range(cant_iteraciones):
+            self.dia += 1
             self.set_demanda()
             self.set_reposicion(i+1)
             self.set_disponibilidad(i+1)
@@ -96,6 +119,10 @@ class Producto:
             self.set_costo_reposicion()
             self.set_total()
 
+            self.tabla.append(self.guardar_iteracion())
+            # Guardar datos de la iteracion
+            self.guardar_iteracion()
+        # print(self.tabla)
         return self.beneficio_total
 
 
@@ -110,6 +137,8 @@ class ProductoSinVencimiento(Producto):
     def simular(self, cant_iteraciones):
         super(ProductoSinVencimiento, self).simular(cant_iteraciones)
         self.set_recupero()
+
+        self.tabla[-1]['total_acum'] = self.beneficio_total
 
         return self.beneficio_total
 

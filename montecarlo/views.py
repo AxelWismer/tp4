@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.views import generic
 from .montecarlo import Producto, ProductoConVencimiento, ProductoSinVencimiento
-from .forms import ParametersForm
+from .forms import ParametersForm, ParametersForm2
 # Create your views here.
 
 class Montecarlo(generic.FormView):
@@ -10,7 +10,6 @@ class Montecarlo(generic.FormView):
 
     def form_valid(self, form):
         if form.cleaned_data['pseudoaleatorio'] == 'True':
-            print("algo")
             num_pseudoaleatorios = [0.94, 0.74, 0.62, 0.11, 0.17, 0.66, 0.54, 0.30, 0.69, 0.08,
            0.27, 0.13, 0.80, 0.10, 0.54, 0.60, 0.49, 0.78, 0.66, 0.44]
         else:
@@ -39,7 +38,24 @@ class Montecarlo(generic.FormView):
                 num_pseudoaleatorios=num_pseudoaleatorios
             )
         iteraciones = form.cleaned_data['cant_iteraciones']
-        ganacia = product.simular(iteraciones)
-        ganacia_media = round(ganacia / iteraciones, 2)
-        return render(self.request, template_name=self.template_name,
-                      context={'ganancia': ganacia, 'form': form, 'ganancia_media': ganacia_media})
+        ganancia = product.simular(iteraciones)
+
+        context = {}
+        context['ganancia'] = ganancia
+        context['ganancia_media'] = round(ganancia / iteraciones, 2)
+        context['form'] = form
+
+        if len(product.tabla) >= 30:
+            context['tabla'] = product.tabla[0:30]
+            if len(product.tabla) >= 40:
+                context['tabla_fin'] = product.tabla[-10:]
+            else:
+                context['tabla_fin'] = product.tabla[30:]
+        else:
+            context['tabla'] = product.tabla
+
+        return render(self.request, template_name=self.template_name, context=context)
+
+
+class Montecarlo2(Montecarlo):
+    form_class = ParametersForm2
